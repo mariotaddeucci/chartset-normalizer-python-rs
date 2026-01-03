@@ -14,7 +14,8 @@ The unified pipeline performs the following stages:
 3. **Build**: Wheel compilation for multiple platforms and architectures (only after tests pass)
    - Linux: x86_64, aarch64 (ARM64)
    - macOS: x86_64 (Intel), aarch64 (Apple Silicon)
-   - Windows: x64, x86, aarch64 (ARM64)
+   - Windows: x64, x86
+   - Note: PyPy builds are skipped; Windows ARM64 is not supported due to cross-compilation limitations
 4. **Publish**: Deploy to PyPI (only when triggered by v* tags)
 
 The workflow uses PyO3's maturin-action for building Rust-based Python packages and OIDC for secure authentication with PyPI.
