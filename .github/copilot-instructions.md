@@ -1,0 +1,1 @@
+always use uv to run code, tests and manage dependencies.
