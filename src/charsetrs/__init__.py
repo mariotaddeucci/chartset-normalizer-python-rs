@@ -16,10 +16,10 @@ __version__ = "0.1.0"
 def detect(file_path, max_sample_size=None):
     """
     Detect the encoding of a file.
-    
+
     This function uses streaming to analyze files efficiently, making it suitable
     for large files. By default, it reads up to 1MB of the file for detection.
-    
+
     Args:
         file_path: Path to the file to detect encoding (string or Path object)
         max_sample_size: Optional. Maximum number of bytes to read from the file.
@@ -27,16 +27,16 @@ def detect(file_path, max_sample_size=None):
                         For large files, you can increase this for better accuracy,
                         or decrease it for faster processing.
                         Examples: 512*1024 (512KB), 2*1024*1024 (2MB)
-    
+
     Returns:
         str: The detected encoding name (e.g., 'utf_8', 'cp1252', 'windows_1256')
-    
+
     Examples:
         >>> import charsetrs
         >>> encoding = charsetrs.detect("file.txt")
         >>> print(encoding)
         'utf_8'
-        
+
         >>> # For large files, specify sample size
         >>> encoding = charsetrs.detect("large_file.txt", max_sample_size=2*1024*1024)
         >>> print(encoding)
@@ -49,11 +49,11 @@ def detect(file_path, max_sample_size=None):
 def convert(file_path, to, max_sample_size=None):
     """
     Convert a file from its detected encoding to a target encoding.
-    
+
     This function detects the source encoding and converts the file content
     to the specified target encoding. For large files, you can control how
     many bytes are used for encoding detection.
-    
+
     Args:
         file_path: Path to the file to convert (string or Path object)
         to: Target encoding name (e.g., 'utf-8', 'utf-16', 'latin-1')
@@ -61,28 +61,28 @@ def convert(file_path, to, max_sample_size=None):
                         Default is 1MB. Larger values improve detection accuracy
                         for files with mixed content or rare characters.
                         Examples: 512*1024 (512KB), 2*1024*1024 (2MB)
-    
+
     Returns:
         str: The file content converted to the target encoding
-    
+
     Raises:
         IOError: If file cannot be read
         ValueError: If encoding conversion fails
         LookupError: If target encoding is invalid
-    
+
     Examples:
         >>> import charsetrs
         >>> content = charsetrs.convert("file.txt", to="utf-8")
         >>> print(content)
         'Hello World...'
-        
+
         >>> # For large files with custom sample size
         >>> content = charsetrs.convert("large_file.txt", to="utf-8", max_sample_size=512*1024)
     """
     # Detect the source encoding
     match = _from_path_stream_internal(str(file_path), max_sample_size)
     source_encoding = match.encoding
-    
+
     # Normalize encoding names for Python codec
     encoding_map = {
         "utf_8": "utf-8",
@@ -127,25 +127,23 @@ def convert(file_path, to, max_sample_size=None):
         "ascii": "ascii",
         "us_ascii": "ascii",
     }
-    
+
     # Normalize source encoding
     source_normalized = source_encoding.lower().replace("-", "_")
     python_source_encoding = encoding_map.get(source_normalized, source_encoding)
-    
+
     # Normalize target encoding
     target_normalized = to.lower().replace("-", "_")
     python_target_encoding = encoding_map.get(target_normalized, to)
-    
+
     try:
         # Read the entire file with detected encoding
         with open(file_path, encoding=python_source_encoding, errors="strict") as f:
             content = f.read()
-        
+
         # Encode to target encoding and decode back to string to validate
         content.encode(python_target_encoding)
-        
+
         return content
     except (UnicodeDecodeError, UnicodeEncodeError, LookupError) as e:
-        raise ValueError(
-            f"Cannot convert file from '{source_encoding}' to '{to}': {str(e)}"
-        ) from e
+        raise ValueError(f"Cannot convert file from '{source_encoding}' to '{to}': {str(e)}") from e

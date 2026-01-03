@@ -63,11 +63,11 @@ class TestDetectAPI:
             # Test with small sample size (512 bytes)
             encoding_small = charsetrs.detect(temp_path, max_sample_size=512)
             assert encoding_small is not None
-            
+
             # Test with larger sample size (2MB)
             encoding_large = charsetrs.detect(temp_path, max_sample_size=2 * 1024 * 1024)
             assert encoding_large is not None
-            
+
             # Both should detect UTF-8
             assert "UTF" in encoding_small.upper() or "8" in encoding_small
             assert "UTF" in encoding_large.upper() or "8" in encoding_large
@@ -210,22 +210,22 @@ class TestDetectWithTestData:
     def test_detect_sample_files(self):
         """Test detection on sample data files"""
         data_dir = Path(__file__).parent / "data"
-        
+
         if not data_dir.exists():
             pytest.skip("Test data directory not found")
-        
+
         sample_files = list(data_dir.glob("*.txt"))
-        
+
         if not sample_files:
             pytest.skip("No sample files found in test data directory")
-        
+
         # Test at least one file
         for sample_file in sample_files[:5]:  # Test first 5 files
             encoding = charsetrs.detect(sample_file)
             assert encoding is not None
             assert isinstance(encoding, str)
             assert len(encoding) > 0
-            
+
             # Verify we can convert the file
             content = charsetrs.convert(sample_file, to="utf-8")
             assert content is not None
