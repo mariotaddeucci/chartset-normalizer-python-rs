@@ -10,7 +10,6 @@ from charsetrs._internal import analyse_from_path_stream as _analyse_from_path_s
 
 __all__ = [
     "analyse",
-    "convert",
     "normalize",
     "AnalysisResult",
     "CharsetMatch",
