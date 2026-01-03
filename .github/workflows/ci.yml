@@ -36,12 +36,67 @@ jobs:
           uv run task lint
 
   test:
-    name: Test on Python ${{ matrix.python-version }}
-    runs-on: ubuntu-latest
+    name: Test on ${{ matrix.os }} - Python ${{ matrix.python-version }} - ${{ matrix.arch }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13']
+        include:
+          # Ubuntu - Linux x86_64
+          - os: ubuntu-latest
+            python-version: '3.10'
+            arch: x86_64
+          - os: ubuntu-latest
+            python-version: '3.11'
+            arch: x86_64
+          - os: ubuntu-latest
+            python-version: '3.12'
+            arch: x86_64
+          - os: ubuntu-latest
+            python-version: '3.13'
+            arch: x86_64
+
+          # macOS - Intel x86_64
+          - os: macos-13
+            python-version: '3.10'
+            arch: x86_64
+          - os: macos-13
+            python-version: '3.11'
+            arch: x86_64
+          - os: macos-13
+            python-version: '3.12'
+            arch: x86_64
+          - os: macos-13
+            python-version: '3.13'
+            arch: x86_64
+
+          # macOS - ARM64 (M1/M2/M3)
+          - os: macos-14
+            python-version: '3.10'
+            arch: arm64
+          - os: macos-14
+            python-version: '3.11'
+            arch: arm64
+          - os: macos-14
+            python-version: '3.12'
+            arch: arm64
+          - os: macos-14
+            python-version: '3.13'
+            arch: arm64
+
+          # Windows - x86_64
+          - os: windows-latest
+            python-version: '3.10'
+            arch: x86_64
+          - os: windows-latest
+            python-version: '3.11'
+            arch: x86_64
+          - os: windows-latest
+            python-version: '3.12'
+            arch: x86_64
+          - os: windows-latest
+            python-version: '3.13'
+            arch: x86_64
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,6 +105,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.arch == 'arm64' && 'arm64' || 'x64' }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
@@ -58,6 +114,8 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.arch == 'arm64' && 'aarch64-apple-darwin' || '' }}
 
       - name: Install dependencies
         run: |
