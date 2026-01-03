@@ -7,7 +7,7 @@ name = "charsetrs"
 version = "0.1.0"
 description = "A Python library with Rust bindings for charset detection"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.14"
 license = {text = "MIT"}
 authors = [
     {name = "Mario Taddeucci"}
@@ -47,7 +47,8 @@ lint.extend-select = ["E", "F", "W", "C90", "B", "I", "N", "Q", "S", "UP", "YTT"
 
 [tool.taskipy.tasks]
 compile = "maturin develop --release"
-test = "pytest"
+build = "maturin build --release"
+test = "pytest -v"
 lint = "ruff check . && ruff format --check . && pyrefly check . && cargo fmt --check"
 format = "ruff format . && cargo fmt"
 
