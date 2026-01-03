@@ -1,7 +1,7 @@
-use pyo3::prelude::*;
 use pyo3::exceptions::PyIOError;
+use pyo3::prelude::*;
 use std::fs::File;
-use std::io::{Read, BufReader};
+use std::io::{BufReader, Read};
 use std::path::Path;
 
 // Constantes para controle de memória
@@ -54,7 +54,10 @@ struct AnalysisResult {
 #[pymethods]
 impl AnalysisResult {
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("AnalysisResult(encoding='{}', newlines='{}')", self.encoding, self.newlines))
+        Ok(format!(
+            "AnalysisResult(encoding='{}', newlines='{}')",
+            self.encoding, self.newlines
+        ))
     }
 }
 
@@ -63,7 +66,7 @@ fn detect_newline_style(buffer: &[u8]) -> &'static str {
     let mut has_crlf = false;
     let mut has_lf_only = false;
     let mut has_cr_only = false;
-    
+
     let mut i = 0;
     while i < buffer.len() {
         if buffer[i] == b'\r' {
@@ -81,7 +84,7 @@ fn detect_newline_style(buffer: &[u8]) -> &'static str {
             i += 1;
         }
     }
-    
+
     // Prioritize CRLF if found (Windows style)
     if has_crlf {
         "CRLF"
@@ -117,7 +120,10 @@ fn analyze_byte_patterns(buffer: &[u8]) -> Vec<&'static str> {
     let arabic_ratio = arabic_specific as f32 / total_len;
 
     // Turkish specific bytes
-    let turkish_specific = buffer.iter().filter(|&&b| matches!(b, 0xF0 | 0xFD | 0xFE)).count();
+    let turkish_specific = buffer
+        .iter()
+        .filter(|&&b| matches!(b, 0xF0 | 0xFD | 0xFE))
+        .count();
 
     // Mac Cyrillic has very high concentration (>60%) in upper range (0xE0-0xFF)
     // while Arabic spreads more evenly
@@ -144,8 +150,17 @@ fn detect_utf16_pattern(buffer: &[u8]) -> Option<&'static str> {
 
     // Count null bytes in even and odd positions
     let sample_size = buffer.len().min(1000);
-    let even_nulls = buffer[..sample_size].iter().step_by(2).filter(|&&b| b == 0).count();
-    let odd_nulls = buffer[..sample_size].iter().skip(1).step_by(2).filter(|&&b| b == 0).count();
+    let even_nulls = buffer[..sample_size]
+        .iter()
+        .step_by(2)
+        .filter(|&&b| b == 0)
+        .count();
+    let odd_nulls = buffer[..sample_size]
+        .iter()
+        .skip(1)
+        .step_by(2)
+        .filter(|&&b| b == 0)
+        .count();
 
     let threshold = sample_size / 16; // ~6% threshold
 
@@ -167,32 +182,43 @@ fn detect_language_hints(text: &str) -> Vec<&'static str> {
 
     let total_chars = text.chars().count().max(1);
 
-    let arabic_chars = text.chars().filter(|c| {
-        let code = *c as u32;
-        // Arabic block + Arabic Presentation Forms
-        (code >= 0x0600 && code <= 0x06FF) ||
-        (code >= 0xFB50 && code <= 0xFDFF) ||
-        (code >= 0xFE70 && code <= 0xFEFF)
-    }).count();
+    let arabic_chars = text
+        .chars()
+        .filter(|c| {
+            let code = *c as u32;
+            // Arabic block + Arabic Presentation Forms
+            (code >= 0x0600 && code <= 0x06FF)
+                || (code >= 0xFB50 && code <= 0xFDFF)
+                || (code >= 0xFE70 && code <= 0xFEFF)
+        })
+        .count();
 
-    let cyrillic_chars = text.chars().filter(|c| {
-        let code = *c as u32;
-        (code >= 0x0400 && code <= 0x04FF) ||
-        (code >= 0x0500 && code <= 0x052F)
-    }).count();
+    let cyrillic_chars = text
+        .chars()
+        .filter(|c| {
+            let code = *c as u32;
+            (code >= 0x0400 && code <= 0x04FF) || (code >= 0x0500 && code <= 0x052F)
+        })
+        .count();
 
-    let turkish_specific = text.chars().filter(|c| {
-        // Turkish-specific letters that don't appear in other Latin scripts
-        matches!(*c, 'ğ' | 'Ğ' | 'ı' | 'İ' | 'ş' | 'Ş')
-    }).count();
+    let turkish_specific = text
+        .chars()
+        .filter(|c| {
+            // Turkish-specific letters that don't appear in other Latin scripts
+            matches!(*c, 'ğ' | 'Ğ' | 'ı' | 'İ' | 'ş' | 'Ş')
+        })
+        .count();
 
-    let korean_chars = text.chars().filter(|c| {
-        let code = *c as u32;
-        // Hangul Syllables + Hangul Jamo
-        (code >= 0xAC00 && code <= 0xD7AF) ||
-        (code >= 0x1100 && code <= 0x11FF) ||
-        (code >= 0x3130 && code <= 0x318F)
-    }).count();
+    let korean_chars = text
+        .chars()
+        .filter(|c| {
+            let code = *c as u32;
+            // Hangul Syllables + Hangul Jamo
+            (code >= 0xAC00 && code <= 0xD7AF)
+                || (code >= 0x1100 && code <= 0x11FF)
+                || (code >= 0x3130 && code <= 0x318F)
+        })
+        .count();
 
     // Calculate percentages
     let arabic_ratio = arabic_chars as f32 / total_chars as f32;
@@ -222,11 +248,13 @@ fn detect_language_hints(text: &str) -> Vec<&'static str> {
 /// Analyzes encoding and newline style from a file using streaming
 #[pyfunction]
 #[pyo3(signature = (file_path, max_sample_size=None))]
-fn analyse_from_path_stream(file_path: String, max_sample_size: Option<usize>) -> PyResult<AnalysisResult> {
+fn analyse_from_path_stream(
+    file_path: String,
+    max_sample_size: Option<usize>,
+) -> PyResult<AnalysisResult> {
     let path = Path::new(&file_path);
-    let file = File::open(path).map_err(|e| {
-        PyIOError::new_err(format!("Failed to open file: {}", e))
-    })?;
+    let file =
+        File::open(path).map_err(|e| PyIOError::new_err(format!("Failed to open file: {}", e)))?;
 
     let max_size = max_sample_size.unwrap_or(MAX_SAMPLE_SIZE);
 
@@ -237,9 +265,9 @@ fn analyse_from_path_stream(file_path: String, max_sample_size: Option<usize>) -
     // Read file in chunks
     loop {
         let mut chunk = vec![0u8; CHUNK_SIZE];
-        let bytes_read = reader.read(&mut chunk).map_err(|e| {
-            PyIOError::new_err(format!("Failed to read file: {}", e))
-        })?;
+        let bytes_read = reader
+            .read(&mut chunk)
+            .map_err(|e| PyIOError::new_err(format!("Failed to read file: {}", e)))?;
 
         if bytes_read == 0 {
             break;
@@ -288,7 +316,7 @@ fn analyse_from_path_stream(file_path: String, max_sample_size: Option<usize>) -
                 } else {
                     "windows-1252"
                 }
-            },
+            }
             "windows_1256" | "cp1256" | "iso_8859_6" => "windows-1256",
             "windows_1255" | "cp1255" | "iso_8859_8" => "windows-1255",
             "windows_1253" | "cp1253" | "iso_8859_7" => "windows-1253",
@@ -300,7 +328,7 @@ fn analyse_from_path_stream(file_path: String, max_sample_size: Option<usize>) -
                 } else {
                     "windows-1251"
                 }
-            },
+            }
             "windows_1254" | "cp1254" | "iso_8859_9" => "windows-1254",
             "windows_1250" | "cp1250" | "iso_8859_2" => "windows-1250",
             "euc_kr" | "cp949" | "windows_949" | "ks_c_5601_1987" => "windows-949",
@@ -377,7 +405,9 @@ fn analyse_from_path_stream(file_path: String, max_sample_size: Option<usize>) -
                 }
             }
             if lang_hints.contains(&"cyrillic") {
-                if encoding_name.contains("mac-cyrillic") || encoding_name.contains("x-mac-cyrillic") {
+                if encoding_name.contains("mac-cyrillic")
+                    || encoding_name.contains("x-mac-cyrillic")
+                {
                     score += 0.5;
                 } else if encoding_name.contains("1251") {
                     score += 0.2;
@@ -391,8 +421,10 @@ fn analyse_from_path_stream(file_path: String, max_sample_size: Option<usize>) -
                 score -= 0.9;
             }
 
-            if byte_hints.contains(&"likely_mac_cyrillic") &&
-               (encoding_name.contains("mac-cyrillic") || encoding_name.contains("x-mac-cyrillic")) {
+            if byte_hints.contains(&"likely_mac_cyrillic")
+                && (encoding_name.contains("mac-cyrillic")
+                    || encoding_name.contains("x-mac-cyrillic"))
+            {
                 score += 0.4;
             }
 
@@ -410,7 +442,9 @@ fn analyse_from_path_stream(file_path: String, max_sample_size: Option<usize>) -
 
     let mut final_encoding = best_encoding.unwrap_or_else(|| "UTF-8".to_string());
 
-    if final_encoding.to_lowercase().contains("euc-kr") || final_encoding.to_lowercase().contains("euc_kr") {
+    if final_encoding.to_lowercase().contains("euc-kr")
+        || final_encoding.to_lowercase().contains("euc_kr")
+    {
         final_encoding = "windows-949".to_string();
     }
 

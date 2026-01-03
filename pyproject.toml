@@ -50,8 +50,9 @@ lint.extend-select = ["E", "F", "W", "C90", "B", "I", "N", "Q", "S", "UP", "YTT"
 
 [tool.taskipy.tasks]
 test = "pytest"
-lint = "ruff check . && ruff format --check . && pyrefly check ."
-format = "ruff check --fix . && ruff format ."
+lint = "ruff check . && ruff format --check . && pyrefly check . && cargo fmt --check"
+format = "ruff check --fix . && ruff format . && cargo fmt"
+
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -178,6 +178,27 @@ uv run pytest tests/test_charsetrs_api.py -v
 uv run pytest tests/test_full_detection.py -v
 ```
 
+## Development Tasks
+
+The project uses taskipy for common development tasks:
+
+```bash
+# Run tests
+uv run task test
+
+# Format all code (Python + Rust)
+uv run task format
+
+# Check formatting and linting (Python + Rust)
+uv run task lint
+
+# Format only Rust code
+uv run task format_rust
+
+# Lint only Rust code (formatting + clippy)
+uv run task lint_rust
+```
+
 ## Project Structure
 
 ```
