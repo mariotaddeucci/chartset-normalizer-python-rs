@@ -164,7 +164,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.13'
 
       - name: Build wheels
         uses: PyO3/maturin-action@v1
@@ -194,7 +194,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.13'
           architecture: ${{ matrix.target == 'aarch64' && 'x64' || matrix.target }}
 
       - name: Build wheels
@@ -224,7 +224,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.13'
 
       - name: Build wheels
         uses: PyO3/maturin-action@v1
@@ -250,7 +250,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.13'
 
       - name: Build sdist
         uses: PyO3/maturin-action@v1
