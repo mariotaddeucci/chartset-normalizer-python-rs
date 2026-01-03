@@ -13,12 +13,17 @@ from charsetrs._internal import (
     normalize_file_stream as _normalize_file_stream_internal,
 )
 
+try:
+    from charsetrs._version import __version__
+except ImportError:
+    __version__ = "0.0.0+unknown"
+
 __all__ = [
     "analyse",
     "normalize",
     "AnalysisResult",
+    "__version__",
 ]
-__version__ = "0.1.0"
 
 
 @dataclass(frozen=True)

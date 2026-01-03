@@ -1,10 +1,10 @@
 [build-system]
-requires = ["maturin>=1.10.2,<2.0"]
+requires = ["maturin>=1.10.2,<2.0", "setuptools-scm>=8.0"]
 build-backend = "maturin"
 
 [project]
 name = "charsetrs"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A Python library with Rust bindings for charset detection"
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
@@ -67,3 +67,9 @@ testpaths = ["tests"]
 
 [tool.pyrefly]
 replace-imports-with-any = ["charsetrs._internal"]
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "no-local-version"
+tag_regex = "^v(?P<version>[0-9.]+)$"
+write_to = "src/charsetrs/_version.py"
