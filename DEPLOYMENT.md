@@ -76,8 +76,8 @@ git commit -m "Prepare for release"
 git push origin main
 
 # Create and push a version tag (version is derived from the tag)
-git tag v0.2.0
-git push origin v0.2.0
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 The workflow will:
@@ -154,10 +154,10 @@ This project uses **setuptools_scm** for automatic version management based on g
 **To create a new release:**
 
 1. Ensure all changes are committed and pushed to main
-2. Create and push a git tag with the version number (must match pattern `v[0-9.]+`):
+2. Create and push a git tag with the version number (must match pattern `^v(?P<version>[0-9.]+)$`, e.g., v1.0.0, v0.2.1):
    ```bash
-   git tag v0.2.0
-   git push origin v0.2.0
+   git tag v1.0.0
+   git push origin v1.0.0
    ```
 3. The CI/CD pipeline will automatically build and publish with the correct version
 
