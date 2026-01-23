@@ -68,22 +68,22 @@ The unified workflow runs on every push and pull request, but deployment only ha
 When you push a tag starting with `v`, the workflow automatically runs all stages including deployment:
 
 ```bash
-# Update version in both files
-# Edit pyproject.toml: version = "0.1.0"
-# Edit Cargo.toml: version = "0.1.0"
+# No need to manually update version files - setuptools_scm handles this automatically
 
-# Create and push a version tag
-git add pyproject.toml Cargo.toml
-git commit -m "Bump version to 0.1.0"
+# Ensure all changes are committed
+git add .
+git commit -m "Prepare for release"
 git push origin main
-git tag v0.1.0
-git push origin v0.1.0
+
+# Create and push a version tag (version is derived from the tag)
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
 The workflow will:
 1. ✅ Run linter
 2. ✅ Run tests on Linux, macOS, and Windows
-3. ✅ Build wheels for all platforms
+3. ✅ Build wheels for all platforms (version automatically set from git tag)
 4. ✅ **Deploy to PyPI** (only happens with v* tags)
 
 ### Testing Without Deployment
@@ -145,21 +145,23 @@ The publish job:
 
 ## Version Management
 
-Update the version in both files before creating a release:
+This project uses **setuptools_scm** for automatic version management based on git tags. The version is dynamically determined from the git tag at build time.
 
-**pyproject.toml:**
-```toml
-[project]
-name = "charsetrs"
-version = "0.1.0"  # Update this
-```
+**You do NOT need to manually update version numbers in pyproject.toml** - the version is declared as `dynamic = ["version"]` and managed automatically.
 
-**Cargo.toml:**
-```toml
-[package]
-name = "charsetrs"
-version = "0.1.0"  # Update this
-```
+**Important:** The GitHub Actions workflow uses `fetch-depth: 0` to ensure all git tags are available during the build process. This is critical for setuptools_scm to correctly determine the version.
+
+**To create a new release:**
+
+1. Ensure all changes are committed and pushed to main
+2. Create and push a git tag with the version number (must match pattern `v[0-9.]+`):
+   ```bash
+   git tag v0.2.0
+   git push origin v0.2.0
+   ```
+3. The CI/CD pipeline will automatically build and publish with the correct version
+
+**Note:** The Cargo.toml version is separate and used only for Rust builds. It doesn't need to match the Python package version
 
 ## Testing Before Release
 
